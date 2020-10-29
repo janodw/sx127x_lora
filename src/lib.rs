@@ -182,8 +182,8 @@ pub enum Error<SPI, CS, RESET> {
     Transmitting,
 }
 
-use Error::*;
 use crate::register::{FskDataModulationShaping, FskRampUpRamDown};
+use Error::*;
 
 #[cfg(not(feature = "version_0x09"))]
 const VERSION_CHECK: u8 = 0x12;
@@ -682,7 +682,7 @@ where
     pub fn set_fsk_pa_ramp(
         &mut self,
         modulation_shaping: FskDataModulationShaping,
-        ramp: FskRampUpRamDown
+        ramp: FskRampUpRamDown,
     ) -> Result<(), Error<E, CS::Error, RESET::Error>> {
         let pa_ramp: &mut u8 = 0x0
             .set_bits(5..6, modulation_shaping as u8)
