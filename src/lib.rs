@@ -667,6 +667,12 @@ where
 
         let mut buffer = [reg & 0x7f, 0];
         let transfer = self.spi.transfer(&mut buffer).map_err(SPI)?;
+        log::debug!(
+            "Read register 0x{:02x} = {:08b}, 0x{:02x}",
+            reg,
+            transfer[1],
+            transfer[1]
+        );
         self.cs.set_high().map_err(CS)?;
         Ok(transfer[1])
     }
@@ -681,6 +687,7 @@ where
         let buffer = [reg | 0x80, byte];
         self.spi.write(&buffer).map_err(SPI)?;
         self.cs.set_high().map_err(CS)?;
+        log::debug!("Wrot register 0x{:02x} = {:08b}, 0x{:02x}", reg, byte, byte);
         Ok(())
     }
 
