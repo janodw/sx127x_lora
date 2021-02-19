@@ -19,6 +19,7 @@ pub enum Register {
     RegRxNbBytes = 0x13,
     RegPktSnrValue = 0x19,
     RegPktRssiValue = 0x1a,
+    RegRssiValue = 0x1b,
     RegModemConfig1 = 0x1d,
     RegModemConfig2 = 0x1e,
     RegPreambleMsb = 0x20,
@@ -97,5 +98,5 @@ pub enum FskRampUpRamDown {
     _20us = 0b1100,
     _15us = 0b1101,
     _12us = 0b1110,
-    _10us = 0b1111,
+    _10us = 0b1111
 }

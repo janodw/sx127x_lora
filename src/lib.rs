@@ -747,6 +747,13 @@ where
 
         self.write_register(Register::RegPaRamp as u8, pa_ramp)
     }
+
+    pub fn get_raw_rssi(&mut self) -> Result<(u8, u8), Error<E, CS::Error, RESET::Error>> {
+        let rssi_value = self.read_register(Register::RegRssiValue.addr())?;
+        let rssi_wideband = self.read_register(Register::RegRssiWideband.addr())?;
+
+        Ok((rssi_value, rssi_wideband))
+    }
 }
 /// Modes of the radio and their corresponding register values.
 #[derive(Clone, Copy)]
