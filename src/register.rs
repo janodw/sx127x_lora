@@ -19,6 +19,7 @@ pub enum Register {
     RegRxNbBytes = 0x13,
     RegPktSnrValue = 0x19,
     RegPktRssiValue = 0x1a,
+    RegRssiValue = 0x1b,
     RegModemConfig1 = 0x1d,
     RegModemConfig2 = 0x1e,
     RegPreambleMsb = 0x20,
