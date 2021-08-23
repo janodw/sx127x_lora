@@ -151,7 +151,11 @@ use embedded_hal::blocking::spi::{Transfer, Write};
 use embedded_hal::digital::v2::OutputPin;
 use embedded_hal::spi::{Mode, Phase, Polarity};
 
-mod register;
+#[macro_use]
+extern crate bitflags;
+use bitflags::bitflags;
+
+pub mod register;
 use self::register::PaConfig;
 use self::register::Register;
 use self::register::IRQ;
@@ -190,6 +194,22 @@ const VERSION_CHECK: u8 = 0x12;
 
 #[cfg(feature = "version_0x09")]
 const VERSION_CHECK: u8 = 0x09;
+
+bitflags! {
+    pub struct FlagsDIO: u8 {
+        const DIO0_RX_DONE = 0b00_00_00_00;
+        const DIO0_TX_DONE = 0b01_00_00_00;
+        const DIO0_CAD_DONE = 0b10_00_00_00;
+        const DIO0_NONE = 0b11_00_00_00;
+        const DIO0_GROUP = Self::DIO0_RX_DONE.bits | Self::DIO0_TX_DONE.bits | Self::DIO0_CAD_DONE.bits;
+        
+        const DIO1_RX_TIMEOUT = 0b00_00_00_00;
+        const DIO1_FHSS_CHANGE_CH = 0b00_01_00_00;
+        const DIO1_CAD_DETECTED = 0b00_10_00_00;
+        const DIO1_NONE = 0b00_11_00_00;
+        const DIO1_GROUP = Self::DIO1_RX_TIMEOUT.bits | Self::DIO1_FHSS_CHANGE_CH.bits | Self::DIO1_CAD_DETECTED.bits;
+    }
+}
 
 impl<SPI, CS, RESET, E> LoRa<SPI, CS, RESET>
 where
@@ -250,6 +270,22 @@ where
         Ok(())
     }
 
+    pub fn cad(
+        &mut self,
+        delay: &mut dyn DelayMs<u8>
+    ) -> Result<usize, Error<E, CS::Error, RESET::Error>>
+    {
+        rtt_target::rprintln!(" ----------- CAD start");
+        self.set_mode(RadioMode::Stdby)?;
+        self.set_dio(FlagsDIO::DIO0_CAD_DONE, FlagsDIO::DIO0_GROUP)?;
+        self.set_dio(FlagsDIO::DIO1_CAD_DETECTED, FlagsDIO::DIO1_GROUP)?;
+        /* enable all interrupts */
+        self.write_register(Register::RegIrqFlagsMask.addr(), 0x00)?;
+        self.write_register(Register::RegIrqFlags.addr(), 0x05)?;
+        self.set_mode(RadioMode::CAD)?;
+        Ok(1)
+    }
+
     /// Transmits up to 255 bytes of data. To avoid the use of an allocator, this takes a fixed 255 u8
     /// array and a payload size and returns the number of bytes sent if successful.
     pub fn transmit_payload_busy(
@@ -291,8 +327,12 @@ where
         Ok(())
     }
 
-    pub fn set_dio0_tx_done(&mut self) -> Result<(), Error<E, CS::Error, RESET::Error>> {
-        self.write_register(Register::RegDioMapping1.addr(), 0b01_00_00_00)
+    pub fn set_dio(&mut self, which_flag: FlagsDIO, which_group: FlagsDIO) -> Result<(), Error<E, CS::Error, RESET::Error>> {
+        let reg_dio_map1 = self.read_register(Register::RegDioMapping1.addr())?;
+        let mut bits = FlagsDIO::from_bits(reg_dio_map1).unwrap();
+        bits.remove(which_group);
+        bits.set(which_flag, true);
+        self.write_register(Register::RegDioMapping1.addr(), bits.bits)
     }
 
     pub fn transmit_payload(
@@ -335,6 +375,7 @@ where
             Some(value) => {
                 let mut count = 0;
                 let packet_ready = loop {
+                    /* check RxDone interrupt flag */
                     let packet_ready = self.read_register(Register::RegIrqFlags.addr())?.get_bit(6);
                     if count >= value || packet_ready {
                         break packet_ready;
@@ -765,6 +806,7 @@ pub enum RadioMode {
     Tx = 0x03,
     RxContinuous = 0x05,
     RxSingle = 0x06,
+    CAD = 0x07
 }
 
 impl RadioMode {

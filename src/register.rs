@@ -15,6 +15,7 @@ pub enum Register {
     RegFifoTxBaseAddr = 0x0e,
     RegFifoRxBaseAddr = 0x0f,
     RegFifoRxCurrentAddr = 0x10,
+    RegIrqFlagsMask = 0x11,
     RegIrqFlags = 0x12,
     RegRxNbBytes = 0x13,
     RegPktSnrValue = 0x19,
