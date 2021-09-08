@@ -285,6 +285,17 @@ where
         Ok(1)
     }
 
+    pub fn sleep(
+        &mut self,
+    ) -> Result<(), Error<E, CS::Error, RESET::Error>>
+    {
+        self.set_mode(RadioMode::Stdby)?;
+        self.set_dio(FlagsDIO::DIO0_NONE, FlagsDIO::DIO0_GROUP)?;
+        self.set_dio(FlagsDIO::DIO1_NONE, FlagsDIO::DIO1_GROUP)?;
+        self.set_mode(RadioMode::Sleep)?;
+        Ok(())
+    }
+
     /// Transmits up to 255 bytes of data. To avoid the use of an allocator, this takes a fixed 255 u8
     /// array and a payload size and returns the number of bytes sent if successful.
     pub fn transmit_payload_busy(
