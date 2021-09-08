@@ -15,7 +15,6 @@ embedded-hal = "~0.2"
 bit_field = "~0.10"
 log = "0.4"
 bitflags = "1.2"
-rtt-target = { version = "0.3", features = ["cortex-m"] }
 
 [features]
 version_0x09 = []

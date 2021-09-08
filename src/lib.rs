@@ -275,7 +275,6 @@ where
         delay: &mut dyn DelayMs<u8>
     ) -> Result<usize, Error<E, CS::Error, RESET::Error>>
     {
-        rtt_target::rprintln!(" ----------- CAD start");
         self.set_mode(RadioMode::Stdby)?;
         self.set_dio(FlagsDIO::DIO0_CAD_DONE, FlagsDIO::DIO0_GROUP)?;
         self.set_dio(FlagsDIO::DIO1_CAD_DETECTED, FlagsDIO::DIO1_GROUP)?;
