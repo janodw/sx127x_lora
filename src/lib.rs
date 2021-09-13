@@ -337,6 +337,11 @@ where
         Ok(())
     }
 
+    #[deprecated(note = "Please use set_dio function which supports flags for all DIO pins")]
+    pub fn set_dio0_tx_done(&mut self) -> Result<(), Error<E, CS::Error, RESET::Error>> {
+        self.write_register(Register::RegDioMapping1.addr(), 0b01_00_00_00)
+    }
+
     pub fn set_dio(&mut self, which_flag: FlagsDIO, which_group: FlagsDIO) -> Result<(), Error<E, CS::Error, RESET::Error>> {
         let reg_dio_map1 = self.read_register(Register::RegDioMapping1.addr())?;
         let mut bits = FlagsDIO::from_bits(reg_dio_map1).unwrap();
